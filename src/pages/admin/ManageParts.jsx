@@ -5,6 +5,7 @@ import { HiChevronLeft, HiPlus, HiTrash, HiPencilAlt, HiX, HiSave, HiCheck } fro
 import { useLanguage } from '../../context/LanguageContext'
 import { storyService } from '../../services/storyService'
 import RichTextEditor from '../../components/editor/RichTextEditor'
+import ImageUpload from '../../components/ImageUpload'
 import toast from 'react-hot-toast'
 
 /*
@@ -174,10 +175,10 @@ export default function ManageParts() {
         {showAdd && (
           <motion.div
             key="add-form"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden mb-6"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-6"
           >
             <div className="bg-gold-50 dark:bg-gold-900/10 border border-gold-200 dark:border-gold-800/40 rounded-2xl p-6 space-y-5">
               <div className="flex items-center gap-2 mb-1">
@@ -202,11 +203,9 @@ export default function ManageParts() {
 
               <div>
                 <Label>{lang === 'hi' ? 'बैनर चित्र URL (वैकल्पिक)' : 'Banner Image URL (optional)'}</Label>
-                <input
+                <ImageUpload
                   value={newPart.bannerImage}
-                  onChange={e => setNewPart(p => ({ ...p, bannerImage: e.target.value }))}
-                  placeholder="https://…"
-                  className="input-field text-sm"
+                  onChange={(url) => setNewPart(p => ({ ...p, bannerImage: url }))}
                 />
               </div>
 
@@ -340,10 +339,10 @@ export default function ManageParts() {
                 <AnimatePresence>
                   {isEd && (
                     <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="overflow-hidden border-t border-cream-100 dark:border-ink-600"
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -5 }}
+                      className="border-t border-cream-100 dark:border-ink-600"
                     >
                       <div className="p-5 space-y-4 bg-cream-50 dark:bg-ink-700/50">
                         <div>
@@ -360,11 +359,9 @@ export default function ManageParts() {
                           <label className="block text-sm font-medium text-ink-600 dark:text-ink-200 mb-1.5">
                             {lang === 'hi' ? 'बैनर URL (वैकल्पिक)' : 'Banner URL (optional)'}
                           </label>
-                          <input
+                          <ImageUpload
                             value={editForm.bannerImage}
-                            onChange={e => setEditForm(f => ({ ...f, bannerImage: e.target.value }))}
-                            placeholder="https://…"
-                            className="input-field text-sm"
+                            onChange={(url) => setEditForm(f => ({ ...f, bannerImage: url }))}
                           />
                         </div>
                         <div>

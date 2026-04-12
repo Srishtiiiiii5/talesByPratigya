@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { HiTrash, HiBookOpen, HiPencilAlt, HiEye, HiEyeOff, HiViewList } from 'react-icons/hi'
+import { HiTrash, HiBookOpen, HiPencilAlt, HiEye, HiEyeOff, HiViewList, HiCloudUpload } from 'react-icons/hi'
 import { useLanguage } from '../../context/LanguageContext'
 import { storyService } from '../../services/storyService'
 import { blogService }  from '../../services/blogService'
@@ -17,7 +17,7 @@ export default function ManageContent() {
   const [acting,  setActing]  = useState(null) // id of item currently being actioned
 
   useEffect(() => {
-    Promise.all([storyService.getStories(), blogService.getBlogs()])
+    Promise.all([storyService.getAdminStories(), blogService.getAdminBlogs()])
       .then(([s, b]) => {
         setStories(s.data ?? s)
         setBlogs(b.data ?? b)
@@ -199,11 +199,20 @@ export default function ManageContent() {
                     <HiViewList className="w-4 h-4" />
                   </Link>
 
-                  {story.status === 'draft'
-                    ? <ActionBtn onClick={() => publishStory(sid)}   loading={isBusy} icon={HiEye}    label="Publish" />
-                    : <ActionBtn onClick={() => unpublishStory(sid)} loading={isBusy} icon={HiEyeOff} label="Unpublish" />
+                  {/* Edit Story link */}
+                  <Link
+                    to={`/admin/edit-story/${sid}`}
+                    title={lang === 'hi' ? 'संपादित करें' : 'Edit Story Info'}
+                    className="p-2 rounded-lg text-gold-600 dark:text-gold-400 hover:bg-gold-50 dark:hover:bg-gold-900/20 transition-colors"
+                  >
+                    <HiPencilAlt className="w-4 h-4" />
+                  </Link>
+
+                   {story.status === 'draft'
+                    ? <ActionBtn onClick={() => publishStory(sid)}   loading={isBusy} icon={HiCloudUpload} label={lang === 'hi' ? 'प्रकाशित करें' : 'Publish'} />
+                    : <ActionBtn onClick={() => unpublishStory(sid)} loading={isBusy} icon={HiEyeOff}      label={lang === 'hi' ? 'अप्रकाशित करें' : 'Unpublish'} />
                   }
-                  <ActionBtn onClick={() => deleteStory(sid)} loading={isBusy} danger icon={HiTrash} label="Delete" />
+                  <ActionBtn onClick={() => deleteStory(sid)} loading={isBusy} danger icon={HiTrash} label={lang === 'hi' ? 'हटाएं' : 'Delete'} />
                 </div>
               </motion.div>
             )
@@ -245,11 +254,20 @@ export default function ManageContent() {
                     {blog.status === 'published' ? (lang === 'hi' ? 'प्रकाशित' : 'Published') : (lang === 'hi' ? 'ड्राफ्ट' : 'Draft')}
                   </span>
 
-                  {blog.status !== 'published'
-                    ? <ActionBtn onClick={() => publishBlog(bid)}   loading={isBusy} icon={HiEye}    label="Publish" />
-                    : <ActionBtn onClick={() => unpublishBlog(bid)} loading={isBusy} icon={HiEyeOff} label="Unpublish" />
+                  {/* Edit Blog link */}
+                  <Link
+                    to={`/admin/edit-post/${bid}`}
+                    title={lang === 'hi' ? 'संपादित करें' : 'Edit Post'}
+                    className="p-2 rounded-lg text-gold-600 dark:text-gold-400 hover:bg-gold-50 dark:hover:bg-gold-900/20 transition-colors"
+                  >
+                    <HiPencilAlt className="w-4 h-4" />
+                  </Link>
+
+                   {blog.status !== 'published'
+                    ? <ActionBtn onClick={() => publishBlog(bid)}   loading={isBusy} icon={HiCloudUpload} label={lang === 'hi' ? 'प्रकाशित करें' : 'Publish'} />
+                    : <ActionBtn onClick={() => unpublishBlog(bid)} loading={isBusy} icon={HiEyeOff}      label={lang === 'hi' ? 'अप्रकाशित करें' : 'Unpublish'} />
                   }
-                  <ActionBtn onClick={() => deleteBlog(bid)} loading={isBusy} danger icon={HiTrash} label="Delete" />
+                  <ActionBtn onClick={() => deleteBlog(bid)} loading={isBusy} danger icon={HiTrash} label={lang === 'hi' ? 'हटाएं' : 'Delete'} />
                 </div>
               </motion.div>
             )

@@ -1,10 +1,11 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { HiUpload, HiEye, HiSave } from 'react-icons/hi'
 import { useLanguage } from '../../context/LanguageContext'
 import { blogService } from '../../services/blogService'
 import RichTextEditor from '../../components/editor/RichTextEditor'
+import ImageUpload from '../../components/ImageUpload'
 import toast from 'react-hot-toast'
 
 // These map to the backend's `category` / `group` field
@@ -20,6 +21,7 @@ const CATEGORIES = [
 export default function CreatePost() {
   const { lang, t } = useLanguage()
   const navigate    = useNavigate()
+  const { id }      = useParams()
 
   /*
    * Backend blog body: { title, content, coverImage, status }
@@ -35,6 +37,26 @@ export default function CreatePost() {
   })
   const [preview, setPreview] = useState(false)
   const [saving,  setSaving]  = useState(false)
+  const [loading, setLoading] = useState(!!id)
+
+  useEffect(() => {
+    if (id) {
+      blogService.getAdminBlog(id)
+        .then(data => {
+          if (data) {
+            setForm({
+              title:      data.titleHi || data.titleEn || data.title || '',
+              content:    data.content || '',
+              coverImage: data.coverImage || '',
+              category:   data.category || 'sahitya',
+              tags:       data.tags ? data.tags.join(', ') : '',
+            })
+          }
+        })
+        .catch(() => toast.error(lang === 'hi' ? 'ब्लॉग लोड करने में त्रुटि।' : 'Error loading blog.'))
+        .finally(() => setLoading(false))
+    }
+  }, [id, lang])
 
   const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target?.value ?? e }))
 
@@ -49,19 +71,26 @@ export default function CreatePost() {
     }
     setSaving(true)
     try {
-      await blogService.createBlog({
+      const payload = {
         title:      form.title,
         content:    form.content,
         coverImage: form.coverImage,
         category:   form.category,
         tags:       form.tags.split(',').map(t => t.trim()).filter(Boolean),
         status,
-      })
-      toast.success(
-        status === 'published'
-          ? (lang === 'hi' ? 'ब्लॉग प्रकाशित हुआ! ✨' : 'Blog published! ✨')
-          : (lang === 'hi' ? 'ड्राफ्ट सेव हुआ!' : 'Draft saved!')
-      )
+      }
+      
+      if (id) {
+        await blogService.updateBlog(id, payload)
+        toast.success(lang === 'hi' ? 'ब्लॉग अपडेट हुआ!' : 'Blog updated!')
+      } else {
+        await blogService.createBlog(payload)
+        toast.success(
+          status === 'published'
+            ? (lang === 'hi' ? 'ब्लॉग प्रकाशित हुआ! ✨' : 'Blog published! ✨')
+            : (lang === 'hi' ? 'ड्राफ्ट सेव हुआ!' : 'Draft saved!')
+        )
+      }
       navigate('/admin/manage')
     } catch (err) {
       toast.error(err.response?.data?.message || (lang === 'hi' ? 'कुछ गड़बड़ हुई।' : 'Something went wrong.'))
@@ -76,16 +105,22 @@ export default function CreatePost() {
     </label>
   )
 
+  if (loading) {
+    return <div className="text-center py-20 text-ink-400 hindi-text">{t('loading') || 'Loading...'}</div>
+  }
+
   return (
     <div>
       {/* Page header */}
       <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="font-serif text-3xl font-bold text-ink-700 dark:text-ink-50 hindi-text">
-            {t('createPost')}
+            {id ? (lang === 'hi' ? 'ब्लॉग संपादित करें' : 'Edit Post') : t('createPost')}
           </h1>
           <p className="text-ink-400 dark:text-ink-300 mt-1 hindi-text text-sm">
-            {lang === 'hi' ? 'नया ब्लॉग पोस्ट लिखें' : 'Write a new blog post'}
+            {id 
+              ? (lang === 'hi' ? 'ब्लॉग विवरण अपडेट करें' : 'Update blog details')
+              : (lang === 'hi' ? 'नया ब्लॉग पोस्ट लिखें' : 'Write a new blog post')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -159,34 +194,9 @@ export default function CreatePost() {
             {/* Cover image */}
             <div className="bg-white dark:bg-ink-800 rounded-2xl p-6 shadow-card">
               <Label>{t('coverImage')}</Label>
-              {form.coverImage ? (
-                <div>
-                  <img
-                    src={form.coverImage}
-                    alt="cover"
-                    className="w-full h-40 object-cover rounded-xl mb-3"
-                    onError={(e) => e.currentTarget.style.display = 'none'}
-                  />
-                  <button
-                    onClick={() => setForm(f => ({ ...f, coverImage: '' }))}
-                    className="text-xs text-red-400 hover:text-red-600 transition-colors"
-                  >
-                    {lang === 'hi' ? 'हटाएँ' : 'Remove'}
-                  </button>
-                </div>
-              ) : (
-                <div className="border-2 border-dashed border-cream-300 dark:border-ink-500 rounded-xl p-5 text-center mb-3">
-                  <HiUpload className="w-7 h-7 text-ink-300 mx-auto mb-2" />
-                  <p className="text-xs text-ink-400 hindi-text">
-                    {lang === 'hi' ? 'URL दर्ज करें या एडिटर में अपलोड करें' : 'Enter URL or upload via editor'}
-                  </p>
-                </div>
-              )}
-              <input
+              <ImageUpload
                 value={form.coverImage}
-                onChange={set('coverImage')}
-                placeholder="https://example.com/image.jpg"
-                className="input-field text-sm"
+                onChange={(url) => setForm(f => ({ ...f, coverImage: url }))}
               />
             </div>
 
@@ -225,17 +235,19 @@ export default function CreatePost() {
               >
                 {saving
                   ? <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> ...</span>
-                  : <><HiEye className="w-4 h-4" /> {t('publishPost')}</>
+                  : <><HiEye className="w-4 h-4" /> {id ? (lang === 'hi' ? 'सेव करें' : 'Save Changes') : t('publishPost')}</>
                 }
               </button>
-              <button
-                onClick={() => handleSubmit('draft')}
-                disabled={saving}
-                className="btn-secondary w-full justify-center hindi-text disabled:opacity-60"
-              >
-                <HiSave className="w-4 h-4" />
-                {t('saveDraft')}
-              </button>
+              {!id && (
+                <button
+                  onClick={() => handleSubmit('draft')}
+                  disabled={saving}
+                  className="btn-secondary w-full justify-center hindi-text disabled:opacity-60"
+                >
+                  <HiSave className="w-4 h-4" />
+                  {t('saveDraft')}
+                </button>
+              )}
             </div>
           </div>
         </motion.div>

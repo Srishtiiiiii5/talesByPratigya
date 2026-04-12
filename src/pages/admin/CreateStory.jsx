@@ -5,6 +5,7 @@ import { HiPlus, HiTrash, HiSave, HiEye } from 'react-icons/hi'
 import { useLanguage } from '../../context/LanguageContext'
 import { storyService } from '../../services/storyService'
 import RichTextEditor from '../../components/editor/RichTextEditor'
+import ImageUpload from '../../components/ImageUpload'
 import toast from 'react-hot-toast'
 
 /*
@@ -12,7 +13,7 @@ import toast from 'react-hot-toast'
  * Backend part body   : { partNumber, title, content, bannerImage }
  */
 
-const GROUPS = [
+const CATEGORIES = [
   { value: 'supernatural', hiLabel: 'अलौकिक',    enLabel: 'Supernatural' },
   { value: 'historical',   hiLabel: 'ऐतिहासिक',   enLabel: 'Historical' },
   { value: 'romance',      hiLabel: 'रोमांस',      enLabel: 'Romance' },
@@ -31,7 +32,7 @@ export default function CreateStory() {
     title:       '',
     description: '',
     coverImage:  '',
-    group:       'romance',
+    category:    'romance',
     tags:        '',
   })
   const [parts,     setParts]     = useState([emptyPart(1)])
@@ -73,7 +74,7 @@ export default function CreateStory() {
         title:       story.title,
         description: story.description,
         coverImage:  story.coverImage,
-        group:       story.group,
+        category:    story.category,
         status:      publishStatus,
         tags:        story.tags.split(',').map(t => t.trim()).filter(Boolean),
       })
@@ -102,7 +103,7 @@ export default function CreateStory() {
       )
       navigate('/admin/manage')
     } catch (err) {
-      toast.error(err.response?.data?.message || (lang === 'hi' ? 'कुछ गड़बड़ हुई।' : 'Something went wrong.'))
+      toast.error(err.response?.data?.message || (lang === 'hi' ? 'कुछ गड़बड़ हुई। ' : 'Something went wrong.'))
     } finally {
       setSaving(false)
     }
@@ -224,30 +225,20 @@ export default function CreateStory() {
               {/* Cover image */}
               <div className="bg-white dark:bg-ink-800 rounded-2xl p-6 shadow-card">
                 <Label>{t('coverImage')}</Label>
-                {story.coverImage && (
-                  <img
-                    src={story.coverImage}
-                    alt=""
-                    className="w-full h-44 object-cover rounded-xl mb-3"
-                    onError={(e) => e.currentTarget.style.display = 'none'}
-                  />
-                )}
-                <input
+                <ImageUpload
                   value={story.coverImage}
-                  onChange={setS('coverImage')}
-                  placeholder="https://…"
-                  className="input-field text-sm"
+                  onChange={(url) => setStory(s => ({ ...s, coverImage: url }))}
                 />
               </div>
 
-              {/* Group / Tags */}
+              {/* Category / Tags */}
               <div className="bg-white dark:bg-ink-800 rounded-2xl p-6 shadow-card space-y-4">
                 <div>
-                  <Label>{lang === 'hi' ? 'विधा (Genre)' : 'Genre'}</Label>
-                  <select value={story.group} onChange={setS('group')} className="input-field hindi-text">
-                    {GROUPS.map(g => (
-                      <option key={g.value} value={g.value}>
-                        {lang === 'hi' ? g.hiLabel : g.enLabel}
+                  <Label>{lang === 'hi' ? 'श्रेणी (Category)' : 'Category'}</Label>
+                  <select value={story.category} onChange={setS('category')} className="input-field hindi-text">
+                    {CATEGORIES.map(c => (
+                      <option key={c.value} value={c.value}>
+                        {lang === 'hi' ? c.hiLabel : c.enLabel}
                       </option>
                     ))}
                   </select>
@@ -310,12 +301,13 @@ export default function CreateStory() {
                   </div>
 
                   <div>
-                    <Label>{lang === 'hi' ? 'बैनर चित्र URL (वैकल्पिक)' : 'Banner Image URL (optional)'}</Label>
-                    <input
+                    <Label>{lang === 'hi' ? 'बैनर चित्र (वैकल्पिक)' : 'Banner Image (optional)'}</Label>
+                    <ImageUpload
                       value={part.bannerImage}
-                      onChange={setP(idx, 'bannerImage')}
-                      placeholder="https://…"
-                      className="input-field text-sm"
+                      onChange={(url) => {
+                         const e = { target: { value: url } };
+                         setP(idx, 'bannerImage')(e);
+                      }}
                     />
                   </div>
                 </div>

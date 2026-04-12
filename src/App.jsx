@@ -17,6 +17,7 @@ import CreatePost     from './pages/admin/CreatePost'
 import CreateStory    from './pages/admin/CreateStory'
 import ManageContent  from './pages/admin/ManageContent'
 import ManageParts    from './pages/admin/ManageParts'
+import EditStory      from './pages/admin/EditStory'
 
 export default function App() {
   return (
@@ -57,9 +58,11 @@ export default function App() {
         {/* ── Admin (protected) ── */}
         <Route element={<ProtectedRoute adminOnly />}>
           <Route element={<AdminLayout />}>
-            <Route path="/admin"                       element={<AdminDashboard />} />
+            <Route path="/admin"                      element={<AdminDashboard />} />
             <Route path="/admin/create-post"          element={<CreatePost />} />
+            <Route path="/admin/edit-post/:id"        element={<CreatePost />} />
             <Route path="/admin/create-story"         element={<CreateStory />} />
+            <Route path="/admin/edit-story/:id"       element={<EditStory />} />
             <Route path="/admin/manage"               element={<ManageContent />} />
             <Route path="/admin/story/:storyId/parts" element={<ManageParts />} />
           </Route>

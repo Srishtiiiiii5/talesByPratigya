@@ -89,6 +89,29 @@ export const blogService = {
     }
   },
 
+  /* ── Admin: GET /blogs/admin/all ────────────────────── */
+  async getAdminBlogs({ page = 1, limit = 50, search = '' } = {}) {
+    try {
+      const res  = await api.get('/blogs/admin/all', { params: { page, limit, search } })
+      const data = unwrap(res)
+      const list = data.blogs ?? data
+      return { data: Array.isArray(list) ? list.map(normaliseBlog) : [], total: data.total ?? 0 }
+    } catch {
+      return { data: [], total: 0 }
+    }
+  },
+
+  /* ── Admin: GET /blogs/admin/:id ───────────────────── */
+  async getAdminBlog(id) {
+    try {
+      const res  = await api.get(`/blogs/admin/${id}`)
+      const data = unwrap(res)
+      return normaliseBlog(data.blog ?? data)
+    } catch {
+      return null
+    }
+  },
+
   /* ── GET /blogs/:id ─────────────────────────────────── */
   async getBlog(id) {
     try {

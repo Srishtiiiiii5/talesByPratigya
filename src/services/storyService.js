@@ -4,8 +4,8 @@ import api from './api'
 // Backend shape: { success, data: { story|stories|part|parts, ... } }
 const unwrap = (res) => res.data?.data ?? res.data
 
-/* ── group → readable label map ─────────────────────── */
-const GROUP_HI = {
+/* ── category → readable label map ─────────────────────── */
+const CAT_HI = {
   supernatural: 'अलौकिक',
   historical:   'ऐतिहासिक',
   romance:      'रोमांस',
@@ -15,7 +15,7 @@ const GROUP_HI = {
   sahitya:      'साहित्य',
   history:      'इतिहास',
 }
-const GROUP_EN = {
+const CAT_EN = {
   supernatural: 'Supernatural',
   historical:   'Historical',
   romance:      'Romance',
@@ -27,10 +27,10 @@ const GROUP_EN = {
 }
 
 /* ── normalise a story from the backend ─────────────── */
-// Backend: { _id, title, description, coverImage, group, status, likeCount, followCount, createdAt, totalParts, readCount }
+// Backend: { _id, title, description, coverImage, category, status, likeCount, followCount, createdAt, totalParts, readCount }
 function normaliseStory(s) {
   if (!s) return null
-  const group = s.group ?? ''
+  const category = s.category ?? s.group ?? ''
   return {
     id:              s._id  ?? s.id,
     _id:             s._id  ?? s.id,
@@ -41,9 +41,9 @@ function normaliseStory(s) {
     descriptionHi:   s.description ?? s.descriptionHi ?? '',
     descriptionEn:   s.descriptionEn ?? s.description ?? '',
     coverImage:      s.coverImage ?? s.bannerImage ?? '',
-    author:          s.author.name ?? 'Pratigya Singh',
-    genreHi:         s.genreHi ?? GROUP_HI[group] ?? group,
-    genreEn:         s.genreEn ?? GROUP_EN[group] ?? group,
+    author:          s.author?.name ?? 'Pratigya Singh',
+    genreHi:         s.genreHi ?? CAT_HI[category] ?? category,
+    genreEn:         s.genreEn ?? CAT_EN[category] ?? category,
     totalParts:      s.totalParts ?? s.partsCount ?? 0,
     status:          s.status ?? 'published',
     featured:        s.featured ?? false,
@@ -53,7 +53,7 @@ function normaliseStory(s) {
     likeCount:       s.likeCount ?? 0,
     followCount:     s.followCount ?? 0,
     tags:            s.tags ?? [],
-    group,
+    category,
   }
 }
 
@@ -80,14 +80,37 @@ function normalisePart(p) {
 export const storyService = {
 
   /* ── GET /stories ──────────────────────────────────── */
-  async getStories({ page = 1, limit = 10, search = '', group = '' } = {}) {
+  async getStories({ page = 1, limit = 10, search = '', category = '' } = {}) {
     try {
-      const res  = await api.get('/stories', { params: { page, limit, search, group } })
+      const res  = await api.get('/stories', { params: { page, limit, search, category } })
       const data = unwrap(res)
       const list = data.stories ?? data
       return { data: Array.isArray(list) ? list.map(normaliseStory) : [], total: data.total ?? 0 }
     } catch {
       return { data: [], total: 0 }
+    }
+  },
+
+  /* ── Admin: GET /stories/admin/all ─────────────────── */
+  async getAdminStories({ page = 1, limit = 50, search = '' } = {}) {
+    try {
+      const res  = await api.get('/stories/admin/all', { params: { page, limit, search } })
+      const data = unwrap(res)
+      const list = data.stories ?? data
+      return { data: Array.isArray(list) ? list.map(normaliseStory) : [], total: data.total ?? 0 }
+    } catch {
+      return { data: [], total: 0 }
+    }
+  },
+
+  /* ── Admin: GET /stories/admin/:id ────────────────── */
+  async getAdminStory(id) {
+    try {
+      const res  = await api.get(`/stories/admin/${id}`)
+      const data = unwrap(res)
+      return normaliseStory(data.story ?? data)
+    } catch {
+      return null
     }
   },
 

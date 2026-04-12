@@ -1,10 +1,11 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useMemo, useCallback } from 'react'
 import ReactQuill from 'react-quill'
+import 'react-quill/dist/quill.snow.css'
 import { useLanguage } from '../../context/LanguageContext'
 import api from '../../services/api'
 import toast from 'react-hot-toast'
 
-const modules = {
+const baseModules = {
   toolbar: [
     [{ header: [1, 2, 3, false] }],
     [{ size: ['small', false, 'large', 'huge'] }],
@@ -31,7 +32,7 @@ export default function RichTextEditor({ value, onChange, placeholder }) {
   const [uploading, setUploading] = useState(false)
 
   /* ── Real image upload via POST /upload ────────────── */
-  const handleImageUpload = () => {
+  const handleImageUpload = useCallback(() => {
     const input  = document.createElement('input')
     input.type   = 'file'
     input.accept = 'image/jpeg,image/png,image/gif,image/webp'
@@ -48,7 +49,6 @@ export default function RichTextEditor({ value, onChange, placeholder }) {
 
       setUploading(true)
       try {
-        /* Send as multipart/form-data with key "image" */
         const formData = new FormData()
         formData.append('image', file)
 
@@ -57,10 +57,8 @@ export default function RichTextEditor({ value, onChange, placeholder }) {
           const res = await api.post('/upload', formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
           })
-          // Backend returns: { success, data: { url, publicId } }
           url = res.data?.data?.url ?? res.data?.url
         } catch {
-          // Fallback: create local object URL for preview
           url = URL.createObjectURL(file)
           toast(lang === 'hi' ? 'छवि लोकल प्रिव्यू में लोड हुई।' : 'Image loaded as local preview.', { icon: 'ℹ️' })
         }
@@ -77,7 +75,15 @@ export default function RichTextEditor({ value, onChange, placeholder }) {
       }
     }
     input.click()
-  }
+  }, [lang])
+
+  const memoizedModules = useMemo(() => ({
+    ...baseModules,
+    toolbar: {
+      container: baseModules.toolbar,
+      handlers: { image: handleImageUpload },
+    },
+  }), [handleImageUpload])
 
   return (
     <div className="relative">
@@ -95,13 +101,7 @@ export default function RichTextEditor({ value, onChange, placeholder }) {
         theme="snow"
         value={value}
         onChange={onChange}
-        modules={{
-          ...modules,
-          toolbar: {
-            container: modules.toolbar,
-            handlers: { image: handleImageUpload },
-          },
-        }}
+        modules={memoizedModules}
         formats={formats}
         placeholder={placeholder || t('content')}
         className="hindi-text"
