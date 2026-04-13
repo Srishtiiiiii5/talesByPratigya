@@ -38,9 +38,10 @@ export default function Header() {
   }
 
   const navItems = [
-    { to: '/',        labelKey: 'home' },
-    { to: '/stories', labelKey: 'stories' },
-    { to: '/blogs',   labelKey: 'blogs' },
+    { to: '/',           labelKey: 'home' },
+    { to: '/stories',    labelKey: 'stories' },
+    { to: '/blogs',      labelKey: 'blogs' },
+    { to: '/guidelines', labelKey: 'guidelines' },
   ]
 
   return (

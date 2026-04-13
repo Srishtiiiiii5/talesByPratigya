@@ -4,6 +4,7 @@ const translations = {
     home:        'होम',
     stories:     'कहानियाँ',
     blogs:       'ब्लॉग',
+    guidelines:  'दिशानिर्देश',
     login:       'लॉगिन',
     signup:      'साइन अप',
     logout:      'लॉगआउट',
@@ -111,6 +112,7 @@ const translations = {
     home:        'Home',
     stories:     'Stories',
     blogs:       'Blogs',
+    guidelines:  'Guidelines',
     login:       'Login',
     signup:      'Sign Up',
     logout:      'Logout',
@@ -118,8 +120,8 @@ const translations = {
     search:      'Search...',
 
     // Hero
-    heroTagline:    'Welcome to the World of Words',
-    heroSubtitle:   'From the pen of Pratigya Singh — historical epics, mysterious tales, and untold love stories',
+    heroTagline:    'Welcome to a World Where Stories Breathe…',
+    heroSubtitle:   'Step softly. You’re crossing into a realm where emotions run deeper, love burns darker, and words have a pulse. Here, stories aren’t just read—they are lived. If you crave dangerous passion and romance that defies the rules, you’ve found your place. Take a breath and let yourself fall. Welcome to my universe. Where stories own you.',
     exploreStories: 'Explore Stories',
     readBlogs:      'Read Blogs',
 

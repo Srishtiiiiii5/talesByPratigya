@@ -10,6 +10,7 @@ import StoryDetail    from './pages/StoryDetail'
 import StoryReader    from './pages/StoryReader'   // standalone — no MainLayout
 import BlogListing    from './pages/BlogListing'
 import BlogDetail     from './pages/BlogDetail'
+import Guidelines     from './pages/Guidelines'
 import Login          from './pages/Login'
 import Signup         from './pages/Signup'
 import AdminDashboard from './pages/admin/Dashboard'
@@ -43,6 +44,7 @@ export default function App() {
           <Route path="/stories/:id" element={<StoryDetail />} />
           <Route path="/blogs"       element={<BlogListing />} />
           <Route path="/blogs/:id"   element={<BlogDetail />} />
+          <Route path="/guidelines"  element={<Guidelines />} />
         </Route>
 
         {/* ── Story reader — standalone (own toolbar, no site header) ── */}
