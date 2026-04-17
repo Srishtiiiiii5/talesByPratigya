@@ -1,16 +1,15 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi'
-import { FcGoogle } from 'react-icons/fc'
+import { FiMail, FiLock, FiEye, FiEyeOff, FiMoon, FiSun } from 'react-icons/fi'
+import { GoogleLogin } from '@react-oauth/google'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useTheme } from '../context/ThemeContext'
-import { FiMoon, FiSun } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 
 export default function Login() {
-  const { login }        = useAuth()
+  const { login, loginWithGoogle } = useAuth()
   const { lang, toggle: toggleLang, t } = useLanguage()
   const { isDark, toggle: toggleTheme } = useTheme()
   const navigate         = useNavigate()
@@ -35,6 +34,20 @@ export default function Login() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      await loginWithGoogle(credentialResponse.credential)
+      toast.success(lang === 'hi' ? 'Google से स्वागत है! 🎉' : 'Welcome via Google! 🎉')
+      navigate(from, { replace: true })
+    } catch (err) {
+      toast.error(err.message || (lang === 'hi' ? 'Google लॉगिन विफल।' : 'Google login failed.'))
+    }
+  }
+
+  const handleGoogleError = () => {
+    toast.error(lang === 'hi' ? 'Google लॉगिन विफल। पुनः प्रयास करें।' : 'Google login failed. Please try again.')
   }
 
   return (
@@ -157,15 +170,20 @@ export default function Login() {
             <div className="flex-1 h-px bg-cream-200 dark:bg-ink-600" />
           </div>
 
-          {/* Google (UI only) */}
-          <button
-            type="button"
-            onClick={() => toast(lang === 'hi' ? 'Google लॉगिन जल्द आ रहा है!' : 'Google login coming soon!')}
-            className="w-full flex items-center justify-center gap-3 px-6 py-3 rounded-full border border-cream-300 dark:border-ink-500 hover:bg-cream-100 dark:hover:bg-ink-600 transition-all duration-200 hindi-text text-sm font-medium text-ink-600 dark:text-ink-200"
-          >
-            <FcGoogle className="w-5 h-5" />
-            {t('continueWithGoogle')}
-          </button>
+          {/* Google OAuth */}
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              useOneTap
+              shape="pill"
+              theme={isDark ? 'filled_black' : 'outline'}
+              text="continue_with"
+              size="large"
+              width="400"
+              locale={lang === 'hi' ? 'hi' : 'en'}
+            />
+          </div>
 
           {/* Signup link */}
           <p className="text-center text-sm text-ink-400 dark:text-ink-300 mt-6 hindi-text">

@@ -12,6 +12,8 @@ import PartNavigation     from '../components/story/PartNavigation'
 import { ReaderSkeleton } from '../components/common/LoadingSkeleton'
 import { enableContentProtection, applyProtectedClass } from '../utils/contentProtection'
 import { saveReadProgress, formatDate } from '../utils/helpers'
+import { useAutoTranslate } from '../hooks/useAutoTranslate'
+import { isHindi } from '../services/translationService'
 
 export default function StoryReader() {
   const { id, partId }           = useParams()
@@ -64,6 +66,23 @@ export default function StoryReader() {
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark)
   }, [isDark])
+
+  /* ── auto-translate ──
+     Fires when lang='en' but the part's stored content is Hindi and no
+     pre-translated English version exists.                               */
+  const rawPartContent = part?.contentEn || part?.contentHi || part?.content || ''
+  const needsAutoTranslate =
+    !loading && lang === 'en' && !part?.contentEn && isHindi(part?.contentHi || part?.content || '')
+
+  const { translated: autoTranslated, isTranslating } = useAutoTranslate(
+    needsAutoTranslate ? (part?.contentHi || part?.content || null) : null,
+    'hi',
+    'en'
+  )
+
+  const displayContent = needsAutoTranslate
+    ? (autoTranslated ?? rawPartContent)   // show translated when ready, original while loading
+    : rawPartContent
 
   if (loading) return (
     <div className="min-h-screen bg-story-light dark:bg-story-dark">
@@ -230,6 +249,15 @@ export default function StoryReader() {
         {/* Protected content */}
         <div className="relative">
           <WatermarkOverlay />
+
+          {/* Auto-translating badge */}
+          {isTranslating && (
+            <div className="flex items-center gap-2 mb-4 text-xs text-gold-600 dark:text-gold-400 hindi-text">
+              <span className="w-3 h-3 border-2 border-gold-500 border-t-transparent rounded-full animate-spin" />
+              {lang === 'hi' ? 'अनुवाद हो रहा है…' : 'Translating…'}
+            </div>
+          )}
+
           <motion.div
             key={partId + '-body'}
             initial={{ opacity: 0 }}
@@ -239,7 +267,7 @@ export default function StoryReader() {
             className="prose-story protected-content relative z-0 hindi-text text-ink-700 dark:text-ink-100"
             style={{ fontSize: `${fontSize}px`, lineHeight: 2.1 }}
             dangerouslySetInnerHTML={{
-              __html: part.content || `<p class="hindi-text">${part.summary || part.titleHi || ''}</p>`,
+              __html: displayContent || `<p class="hindi-text">${part.summary || part.titleHi || ''}</p>`,
             }}
           />
         </div>

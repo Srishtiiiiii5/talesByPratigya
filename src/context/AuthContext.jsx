@@ -31,6 +31,14 @@ export function AuthProvider({ children }) {
     return data
   }
 
+  const loginWithGoogle = async (idToken) => {
+    const data = await authService.loginWithGoogle(idToken)
+    setUser(data.user)
+    localStorage.setItem('tbp-user', JSON.stringify(data.user))
+    if (data.token) localStorage.setItem('tbp-token', data.token)
+    return data
+  }
+
   const logout = () => {
     setUser(null)
     localStorage.removeItem('tbp-user')
@@ -40,7 +48,7 @@ export function AuthProvider({ children }) {
   const isAdmin = user?.role === 'admin'
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout, isAdmin }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, loginWithGoogle, logout, isAdmin }}>
       {children}
     </AuthContext.Provider>
   )

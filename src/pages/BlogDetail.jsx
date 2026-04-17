@@ -10,6 +10,8 @@ import WatermarkOverlay   from '../components/common/WatermarkOverlay'
 import { DetailSkeleton } from '../components/common/LoadingSkeleton'
 import { enableContentProtection, applyProtectedClass } from '../utils/contentProtection'
 import { isLiked, toggleLike, formatDate } from '../utils/helpers'
+import { useAutoTranslate } from '../hooks/useAutoTranslate'
+import { isHindi } from '../services/translationService'
 import toast from 'react-hot-toast'
 
 export default function BlogDetail() {
@@ -115,6 +117,17 @@ export default function BlogDetail() {
     }
   }
 
+  /* ── auto-translate blog content ── */
+  const rawBlogContent = blog?.contentEn || blog?.contentHi || blog?.content || ''
+  const needsBlogTranslation =
+    !loading && lang === 'en' && !blog?.contentEn && isHindi(blog?.contentHi || blog?.content || '')
+
+  const { translated: autoTranslatedBlog, isTranslating: isBlogTranslating } = useAutoTranslate(
+    needsBlogTranslation ? (blog?.contentHi || blog?.content || null) : null,
+    'hi',
+    'en'
+  )
+
   if (loading) return <><ReadingProgressBar /><DetailSkeleton /></>
 
   if (!blog) return (
@@ -128,8 +141,12 @@ export default function BlogDetail() {
 
   // Support both backend fields (title/content) and mock fields (titleHi/contentHi)
   const title    = lang === 'hi' ? (blog.titleHi || blog.title)    : (blog.titleEn || blog.title)
-  const content  = lang === 'hi' ? (blog.contentHi || blog.content) : (blog.contentEn || blog.contentHi || blog.content)
   const category = lang === 'hi' ? (blog.categoryHi || blog.category || blog.group) : (blog.categoryEn || blog.category || blog.group)
+
+  // content: use auto-translated version when the stored English copy doesn't exist
+  const content  = needsBlogTranslation
+    ? (autoTranslatedBlog ?? rawBlogContent)
+    : (lang === 'hi' ? (blog.contentHi || blog.content) : (blog.contentEn || blog.contentHi || blog.content))
   const totalLikes = (blog.likeCount || 0) + (liked && !isLiked('blog', id) ? 1 : 0)
 
   return (
@@ -204,6 +221,15 @@ export default function BlogDetail() {
         {/* Protected content */}
         <div className="relative">
           <WatermarkOverlay />
+
+          {/* Auto-translating badge */}
+          {isBlogTranslating && (
+            <div className="flex items-center gap-2 mb-4 text-xs text-gold-600 dark:text-gold-400 hindi-text">
+              <span className="w-3 h-3 border-2 border-gold-500 border-t-transparent rounded-full animate-spin" />
+              {lang === 'hi' ? 'अनुवाद हो रहा है…' : 'Translating…'}
+            </div>
+          )}
+
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

@@ -1,5 +1,5 @@
-import { createContext, useContext, useState } from 'react'
-import translations from '../utils/translations'
+import { createContext, useContext, useState, useCallback } from 'react'
+import i18n from '../i18n'
 
 const LanguageContext = createContext(null)
 
@@ -8,15 +8,19 @@ export function LanguageProvider({ children }) {
     () => localStorage.getItem('tbp-lang') || 'hi'
   )
 
-  const switchLang = (l) => {
+  const switchLang = useCallback((l) => {
     setLang(l)
     localStorage.setItem('tbp-lang', l)
-  }
+    i18n.changeLanguage(l)
+  }, [])
 
-  const toggle = () => switchLang(lang === 'hi' ? 'en' : 'hi')
+  const toggle = useCallback(
+    () => switchLang(lang === 'hi' ? 'en' : 'hi'),
+    [lang, switchLang]
+  )
 
-  // translate helper
-  const t = (key) => translations[lang]?.[key] ?? translations.en[key] ?? key
+  // t() delegates to i18next — all existing components work unchanged
+  const t = useCallback((key) => i18n.t(key), [lang]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <LanguageContext.Provider value={{ lang, switchLang, toggle, t }}>
