@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { FiInstagram, FiTwitter, FiMail } from 'react-icons/fi'
+import { FiInstagram, FiTwitter, FiMail, FiYoutube } from 'react-icons/fi'
 import { useLanguage } from '../../context/LanguageContext'
 
 export default function Footer() {
@@ -23,11 +23,11 @@ export default function Footer() {
               शब्दों की दुनिया में आपका स्वागत है — ऐतिहासिक गाथाएँ, रहस्यमय कहानियाँ और प्रेम कथाएँ।
             </p>
             <div className="flex gap-3 mt-4">
-              <a href="#" className="btn-ghost p-2 rounded-full" title="Instagram">
+              <a href="https://www.instagram.com/talesbypratigya/" className="btn-ghost p-2 rounded-full" title="Instagram">
                 <FiInstagram className="w-4 h-4" />
               </a>
-              <a href="#" className="btn-ghost p-2 rounded-full" title="Twitter">
-                <FiTwitter className="w-4 h-4" />
+              <a href="https://www.youtube.com/@StoriesByPratigya" className="btn-ghost p-2 rounded-full" title="Youtube">
+                <FiYoutube className="w-4 h-4" />
               </a>
               <a href="mailto:contact@talesbypratigya.com" className="btn-ghost p-2 rounded-full" title="Email">
                 <FiMail className="w-4 h-4" />
